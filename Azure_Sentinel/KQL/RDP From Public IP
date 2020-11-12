@@ -1,0 +1,16 @@
+
+#Name: Successful RDP login originating from a Public IP address
+#Affects: Windows RDP
+
+#Description: Detects successful RDP logins originating from a Public IP address
+
+# - CyberGuard 2020
+
+#EventLog Required: SecurityEvent
+
+Query:
+SecurityEvent
+| where EventID == 4624 and LogonType == 10
+| where ipv4_is_match(IpAddress, '10.0.0.0/8') == false
+| where ipv4_is_match(IpAddress, '172.16.0.0/12') == false
+| where ipv4_is_match(IpAddress, '192.168.0.0/16') == false
