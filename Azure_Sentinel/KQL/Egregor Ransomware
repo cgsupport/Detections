@@ -1,0 +1,21 @@
+#Name: Egregor Ransomware
+#Affects: Windows
+
+#Description: Egregor ransomware, utilising rclone for exfiltration.
+
+# 
+
+#EventLog Required: Sysmon
+
+Query:
+let rule1 = Sysmon
+| where EventID == 1
+| where CommandLine matches regex "(?i).+rundll32\\.exe.+[a-z]{1,3}\\.dll,DllRegisterServer\\s-(password|passegregor10).*" 
+or OriginalFileName == "md.exe"
+or Hashes has_any ("E57311DC19D624EC0DB73B5F4F312F4AFE699FFA","F88A948B0FD137D4B14CF5AEC0C08066CB07E08D");
+let rule2 = Sysmon
+| where EventID == 11
+| where RenderedDescription == "File created" and TargetFilename contains "RECOVER-FILES.txt" ;
+union rule1,rule2
+| extend AccountCustomEntity = UserName
+| extend HostCustomEntity = Computer
