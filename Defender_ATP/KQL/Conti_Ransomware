@@ -1,0 +1,22 @@
+Name: Conti Ransomware Execution Phase
+
+Description: Execution of Conti Ransomware.
+
+KQL:
+
+let rule1=
+DeviceProcessEvents
+| where ProcessCommandLine matches regex "(?i).+--encrypt-mode.(all|local|network).+" or ProcessCommandLine matches regex "(?i).+vssadmin.resize.shadowstorage.+maxsize=(unbounded|.+MB).*" or InitiatingProcessCommandLine matches regex "(?i).+--encrypt-mode.(all|local|network).+" or InitiatingProcessCommandLine matches regex "(?i).+vssadmin.resize.shadowstorage.+maxsize=(unbounded|.+MB).*";
+let rule2=
+DeviceProcessEvents
+| where FileName matches regex "(?i).+\\.conti$" or FileName contains "CONTI_README.txt";
+union rule1,rule2
+
+Name: Conti Ransomware IcedId Loader Activity
+
+Description: IcedID is being seen as the main loader of the Conti Ransomware. MITRE: Malware: IcedID (S0483): "IcedID is a modular banking malware designed to steal financial information that has been observed in the wild since at least 2017. IcedID has been downloaded by Emotet in multiple campaigns".
+
+KQL:
+
+DeviceProcessEvents
+| where ((ProcessCommandLine matches regex @'(.i).*\regsvr32\.exe /s c:\\users\\\w\\AppData\\Local\\Temp\w\.dll$') or ProcessCommandLine matches regex @'(.i)^rundll32\.exe (.{2}):\\Users\\\w\\AppData\\Local\\Temp\\\w\.dat(.{2})update /i:.\w\\\w\.dat.$') or (ProcessCommandLine contains "nltest /domain_trusts" or ProcessCommandLine contains "new view /all" or ProcessCommandLine matches regex @'(.i)^net group \\"\w Admins\\"') or ((InitiatingProcessCommandLine matches regex @'(.i).*\regsvr32\.exe /s c:\\users\\\w\\AppData\\Local\\Temp\w\.dll$') or InitiatingProcessCommandLine matches regex @'(.i)^rundll32\.exe (.{2}):\\Users\\\w\\AppData\\Local\\Temp\\\w\.dat(.{2})update /i:.\w\\\w\.dat.$') or (InitiatingProcessCommandLine contains "nltest /domain_trusts" or InitiatingProcessCommandLine contains "new view /all" or InitiatingProcessCommandLine matches regex @'(.i)^net group \\"\w Admins\\"')
